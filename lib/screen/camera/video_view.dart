@@ -16,27 +16,27 @@ class _VideoViewState extends State<VideoView> {
   final defaultUserid = 0;
   VideoViewController? _mainVideoViewController;
   VideoViewController? _subVideoViewController;
-  RtcEngine? engine;
+  RtcEngine? _engine;
   int? uid = 0;
   int? otherUid;
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<bool>(
-      future: init(),
-      builder: (context, snapshot) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Stack(
-                children: [renderMainView(), renderSubView()],
+        future: init(),
+        builder: (context, snapshot) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Stack(
+                  children: [renderMainView(), renderSubView()],
+                ),
               ),
-            ),
-            GoOutButton()
-          ],
-        );
-      },
+              GoOutButton()
+            ],
+          );
+        }
     );
   }
 
@@ -58,14 +58,14 @@ class _VideoViewState extends State<VideoView> {
     );
   }
 
-  renderMainView() async {
+  renderMainView() {
     if (uid == null) {
       return Center(
         child: Text(Strings.PLEASE_JOIN),
       );
     } else {
-      _mainVideoViewController = await VideoViewController(
-        rtcEngine: engine!,
+      _mainVideoViewController = VideoViewController(
+        rtcEngine: _engine!,
         canvas: VideoCanvas(
           uid: defaultUserid,
         ),
@@ -76,14 +76,14 @@ class _VideoViewState extends State<VideoView> {
     }
   }
 
-  renderSubView() async {
+  renderSubView() {
     if (otherUid == null) {
       return Center(
         child: Text(Strings.NO_USER_IN_CHANNEL),
       );
     } else {
-      _subVideoViewController = await VideoViewController.remote(
-        rtcEngine: engine!,
+      _subVideoViewController = VideoViewController.remote(
+        rtcEngine: _engine!,
         canvas: VideoCanvas(uid: otherUid),
         connection: RtcConnection(
             channelId: dotenv.env[EnvKeys.CHANNEL_NAME].toString()),
@@ -105,25 +105,25 @@ class _VideoViewState extends State<VideoView> {
   Future<bool> init() async {
     checkPermission();
 
-    if (engine == null) {
+    if (_engine == null) {
       initEngine();
       setEventHandler();
-      await engine!.enableVideo();
-      await engine!.startPreview();
+      await _engine!.enableVideo();
+      await _engine!.startPreview();
       joinChannel();
     }
     return true;
   }
 
   initEngine() async {
-    engine = createAgoraRtcEngine();
-    await engine!.initialize(
+    _engine = createAgoraRtcEngine();
+    await _engine!.initialize(
       RtcEngineContext(appId: dotenv.env[EnvKeys.APP_ID].toString()),
     );
   }
 
   setEventHandler() {
-    engine!.registerEventHandler(
+    _engine!.registerEventHandler(
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapesd) {
           setState(() {
@@ -153,7 +153,7 @@ class _VideoViewState extends State<VideoView> {
   joinChannel() async {
     ChannelMediaOptions options = ChannelMediaOptions();
 
-    await engine!.joinChannel(
+    await _engine!.joinChannel(
         token: dotenv.env[EnvKeys.TEMP_TOKEN].toString(),
         channelId: dotenv.env[EnvKeys.CHANNEL_NAME].toString(),
         uid: defaultUserid,
@@ -161,17 +161,17 @@ class _VideoViewState extends State<VideoView> {
   }
 
   exitChannel() async {
-    if (engine != null) {
-      await engine!.leaveChannel();
-      engine = null;
+    if (_engine != null) {
+      await _engine!.leaveChannel();
+      _engine = null;
     }
     Navigator.of(context).pop();
   }
 
   clearAllInfo() {
-    engine = null;
     uid = null;
     otherUid = null;
+    _engine = null;
     _mainVideoViewController?.dispose();
     _subVideoViewController?.dispose();
   }
