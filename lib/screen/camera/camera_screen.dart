@@ -152,8 +152,9 @@ class _CameraScreenState extends State<CameraScreen> {
   List<Widget> videoViews(RtcEngine engine) => [
         isSwitch ? myVideoView(engine) : otherVideoView(engine),
         if (_localUserJoined)
-          Align(
-            alignment: Alignment.topLeft,
+          Positioned(
+            left: 8.0,
+            top: 8.0,
             child: Container(
               color: Colors.grey,
               height: 160,
