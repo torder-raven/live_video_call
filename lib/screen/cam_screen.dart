@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:live_video_call/const/agora.dart';
+import 'package:live_video_call/resource/strings.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class CamScreen extends StatefulWidget {
@@ -12,6 +13,7 @@ class CamScreen extends StatefulWidget {
 
 class _CamScreenState extends State<CamScreen> {
   RtcEngine? rtcEngine;
+  RtcEngineEventHandler? rtcEngineEventHandler;
 
   // 내 ID
   int? uid = 0;
@@ -20,15 +22,24 @@ class _CamScreenState extends State<CamScreen> {
   int? otherUid;
 
   @override
+  void initState() {
+    super.initState();
+    initRtcEngine();
+    checkPermission();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "LIVE",
+          Strings.APP_TITLE,
         ),
       ),
+      // setState 마다 future Block이 호출 됨!
+      // FutureBuilder가 꼭 필요한가?
       body: FutureBuilder<bool>(
-        future: init(),
+        future: checkPermission(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
@@ -37,7 +48,7 @@ class _CamScreenState extends State<CamScreen> {
           }
 
           if (!snapshot.hasData) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(),
             );
           }
@@ -49,15 +60,7 @@ class _CamScreenState extends State<CamScreen> {
                 child: Stack(
                   children: [
                     renderMainView(),
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Container(
-                        color: Colors.grey,
-                        height: 160,
-                        width: 160,
-                        child: renderSubView(),
-                      ),
-                    ),
+                    renderSubView(),
                   ],
                 ),
               ),
@@ -65,15 +68,10 @@ class _CamScreenState extends State<CamScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: ElevatedButton(
                   onPressed: () async {
-                    if (rtcEngine != null) {
-                      await rtcEngine?.leaveChannel();
-                      rtcEngine = null;
-                    }
-
                     Navigator.of(context).pop();
                   },
-                  child: Text(
-                    "채널 나가기",
+                  child: const Text(
+                    Strings.LEAVE_CHANNEL,
                   ),
                 ),
               ),
@@ -84,18 +82,29 @@ class _CamScreenState extends State<CamScreen> {
     );
   }
 
+  @override
+  void deactivate() {
+    super.deactivate();
+  }
+
+  @override
+  void dispose() {
+    disposeRtcEngine();
+    super.dispose();
+  }
+
   renderMainView() {
     if (uid == null) {
-      return Center(
+      return const Center(
         child: Text(
-          "채널에 참여해주세요.",
+          Strings.PLEASE_JOIN_CHANNEL,
         ),
       );
     } else {
       return AgoraVideoView(
         controller: VideoViewController(
-          rtcEngine: rtcEngine!,
-          canvas: VideoCanvas(
+          rtcEngine: getRtcEngine(),
+          canvas: const VideoCanvas(
             uid: 0,
           ),
         ),
@@ -104,16 +113,35 @@ class _CamScreenState extends State<CamScreen> {
   }
 
   renderSubView() {
+    return Align(
+      alignment: Alignment.topLeft,
+      child: Container(
+        color: Colors.grey,
+        height: 160,
+        width: 160,
+        child: renderOtherUserView(),
+      ),
+    );
+  }
+
+  renderOtherUserView() {
     if (otherUid == null) {
-      return Center(
-        child: Text("채널에 유저가 없습니다."),
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(
+          child: Icon(
+            Icons.no_accounts_rounded,
+            color: Colors.white,
+          ),
+        ),
       );
     } else {
       return AgoraVideoView(
         controller: VideoViewController.remote(
-          rtcEngine: rtcEngine!,
+          rtcEngine: getRtcEngine(),
+          // View를 여러 개 관리하게 된다면 여러 명이서 영상 통화를 할 수 있을까?
           canvas: VideoCanvas(uid: otherUid),
-          connection: RtcConnection(
+          connection: const RtcConnection(
             channelId: CHANNEL_ID,
           ),
         ),
@@ -121,72 +149,110 @@ class _CamScreenState extends State<CamScreen> {
     }
   }
 
-  Future<bool> init() async {
+  RtcEngine getRtcEngine() {
+    return rtcEngine ??= createAgoraRtcEngine();
+  }
+
+  RtcEngineEventHandler getRtcEngineEventHandler() {
+    return rtcEngineEventHandler ??= RtcEngineEventHandler(
+      onJoinChannelSuccess: onJoinChannelSuccess,
+      onLeaveChannel: onLeaveChannel,
+      onUserJoined: onUserJoined,
+      onUserOffline: onUserOffline,
+    );
+  }
+
+  onJoinChannelSuccess(
+    RtcConnection rtcConnection,
+    int elapsed,
+  ) {
+    // 내가 채널에 입장했을 때
+    // rtcConnection 연결 정보
+    // elapsed 연결된 시간(연결된 지 얼마나 됐는지?)
+    setState(() {
+      uid = rtcConnection.localUid;
+    });
+  }
+
+  onLeaveChannel(
+    RtcConnection rtcConnection,
+    RtcStats states,
+  ) {
+    setState(() {
+      uid = null;
+    });
+  }
+
+  onUserJoined(
+    RtcConnection rtcConnection,
+    int remoteUid,
+    int elapsed,
+  ) {
+    setState(() {
+      otherUid = remoteUid;
+    });
+  }
+
+  onUserOffline(
+    RtcConnection rtcConnection,
+    int remoteUid,
+    UserOfflineReasonType reasonType,
+  ) {
+    setState(() {
+      otherUid = null;
+    });
+  }
+
+  Future<bool> initRtcEngine() async {
+    await disposeRtcEngine();
+    await getRtcEngine().initialize(
+      const RtcEngineContext(
+        appId: APP_ID,
+      ),
+    );
+
+    getRtcEngine().registerEventHandler(getRtcEngineEventHandler());
+
+    await getRtcEngine().enableVideo();
+    await getRtcEngine().startPreview();
+
+    ChannelMediaOptions options = const ChannelMediaOptions();
+
+    await getRtcEngine().joinChannel(
+      token: TEMP_TOKEN,
+      channelId: CHANNEL_ID,
+      uid: 0,
+      options: options,
+    );
+
+    return true;
+  }
+
+  Future<bool> checkPermission() async {
     final response = await [Permission.camera, Permission.microphone].request();
 
     final cameraPermission = response[Permission.camera];
     final microphonePermission = response[Permission.microphone];
 
     if (cameraPermission != PermissionStatus.granted) {
-      throw "카메라 권한이 없습니다.";
+      throw Strings.ERROR_NOT_GRANT_CAMERA_PERMISSION;
     }
 
     if (microphonePermission != PermissionStatus.granted) {
-      throw "마이크 권한이 없습니다.";
+      throw Strings.ERROR_NOT_GRANT_MICROPHONE_PERMISSION;
     }
-
-    if (rtcEngine == null) {
-      rtcEngine = createAgoraRtcEngine();
-
-      await rtcEngine?.initialize(
-        RtcEngineContext(
-          appId: APP_ID,
-        ),
-      );
-
-      rtcEngine?.registerEventHandler(
-        RtcEngineEventHandler(
-            // 내가 채널에 입장했을 때
-            // rtcConnection 연결 정보
-            // elapsed 연결된 시간(연결된 지 얼마나 됐는지?)
-            onJoinChannelSuccess: (RtcConnection rtcConnection, int elapsed) {
-          print("채널에 입장 uid : ${rtcConnection.localUid}");
-          setState(() {
-            uid = rtcConnection.localUid;
-          });
-        }, onLeaveChannel: (RtcConnection rtcConnection, RtcStats states) {
-          print("채널 퇴장");
-          setState(() {
-            uid = null;
-          });
-        }, onUserJoined:
-                (RtcConnection rtcConnection, int remoteUid, int elapsed) {
-          print("상대가 채널에 입장 uid : $remoteUid");
-          setState(() {
-            otherUid = remoteUid;
-          });
-        }, onUserOffline: (RtcConnection rtcConnection, int remoteUid,
-                UserOfflineReasonType reasonType) {
-          print("상대가 채널에서 나감 uid : $remoteUid");
-          setState(() {
-            otherUid = null;
-          });
-        }),
-      );
-
-      await rtcEngine?.enableVideo();
-      await rtcEngine?.startPreview();
-
-      ChannelMediaOptions options = ChannelMediaOptions();
-
-      await rtcEngine?.joinChannel(
-        token: TEMP_TOKEN,
-        channelId: CHANNEL_ID,
-        uid: 0,
-        options: options,
-      );
-    }
-
     return true;
+  }
+
+  disposeRtcEngine() async {
+    getRtcEngine().unregisterEventHandler(getRtcEngineEventHandler());
+    disposeRtcEngineEventHandler();
+
+    await getRtcEngine().leaveChannel();
+    rtcEngine = null;
+  }
+
+  disposeRtcEngineEventHandler() {
+    rtcEngineEventHandler = null;
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:live_video_call/resource/asset.dart';
+import 'package:live_video_call/resource/strings.dart';
 import 'package:live_video_call/screen/cam_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -8,8 +10,8 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.blue[100],
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
+      body: const Padding(
+        padding: EdgeInsets.all(8.0),
         child: Column(
           children: [
             Expanded(
@@ -48,13 +50,13 @@ class _Logo extends StatelessWidget {
             )
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+        child: const Padding(
+          padding: EdgeInsets.all(16.0),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Icons.video_call_rounded,
+                Icons.videocam_rounded,
                 color: Colors.white,
                 size: 40.0,
               ),
@@ -62,7 +64,7 @@ class _Logo extends StatelessWidget {
                 width: 12.0,
               ),
               Text(
-                "LIVE",
+                Strings.APP_TITLE,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 30.0,
@@ -83,7 +85,7 @@ class _Image extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Image.asset("asset/images/home_img.png"),
+      child: Image.asset("home_img".png()),
     );
   }
 }
@@ -101,12 +103,12 @@ class _Button extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => CamScreen(),
+                builder: (_) => const CamScreen(),
               ),
             );
           },
-          child: Text(
-            "입장하기",
+          child: const Text(
+            Strings.JOIN,
           ),
         ),
       ],
