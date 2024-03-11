@@ -201,9 +201,9 @@ class _CameraScreenState extends State<CameraScreen> {
     return Positioned(
       right: 8.0,
       top: 8.0,
-      child: IconButton(
+      child: FloatingActionButton(
         onPressed: onSwitchVideo,
-        icon: const Icon(Icons.switch_video),
+        child: const Icon(Icons.switch_video),
       ),
     );
   }
