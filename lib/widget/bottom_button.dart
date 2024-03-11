@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:live_video_call/constant/strings.dart';
 
-class EntryButton extends StatelessWidget {
+class BottomButton extends StatelessWidget {
+  final String text;
   final VoidCallback onPressed;
 
-  const EntryButton({super.key, required this.onPressed});
+  const BottomButton({
+    super.key,
+    required this.text,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +21,7 @@ class EntryButton extends StatelessWidget {
         backgroundColor: Colors.blue,
       ),
       child: Text(
-        Strings.LIVE_ENTRY_TEXT,
+        text,
         style: textTheme.titleMedium,
       ),
     );

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:live_video_call/screen/camera/camera_screen.dart';
-import 'package:live_video_call/screen/home/entry_button.dart';
+import 'package:live_video_call/widget/bottom_button.dart';
 
 import '../../constant/constants.dart';
+import '../../constant/strings.dart';
 import 'live_button.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -24,9 +25,12 @@ class HomeScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    EntryButton(onPressed: () {
-                      goToCameraScreen(context);
-                    })
+                    BottomButton(
+                      text: Strings.LIVE_ENTRY_TEXT,
+                      onPressed: () {
+                        goToCameraScreen(context);
+                      },
+                    )
                   ],
                 ),
               )

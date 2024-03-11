@@ -4,6 +4,7 @@ import 'package:live_video_call/constant/strings.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../constant/constants.dart';
+import '../../widget/bottom_button.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -64,7 +65,13 @@ class _CameraScreenState extends State<CameraScreen> {
                   ],
                 ),
               ),
-              popButton(),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: BottomButton(
+                  text: Strings.LIVE_LEAVE_TEXT,
+                  onPressed: leaveChannel,
+                ),
+              ),
             ],
           );
         },
@@ -202,16 +209,6 @@ class _CameraScreenState extends State<CameraScreen> {
     setState(() {
       isSwitch = !isSwitch;
     });
-  }
-
-  Widget popButton() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ElevatedButton(
-        onPressed: leaveChannel,
-        child: Text(Strings.LIVE_LEAVE_TEXT),
-      ),
-    );
   }
 
   void leaveChannel() {
