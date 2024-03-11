@@ -18,7 +18,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   RtcEngine? _engine;
   VideoViewController? _myVideoViewController;
-  VideoViewController? _mainVideoController;
+  VideoViewController? _otherVideoController;
 
   bool _localUserJoined = false;
   int? _otherUId;
@@ -216,7 +216,7 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _dispose() async {
-    _mainVideoController?.dispose();
+    _otherVideoController?.dispose();
     _myVideoViewController?.dispose();
     _engine?.unregisterEventHandler(_rtcEngineEventHandler);
     await _myVideoViewController?.dispose();
