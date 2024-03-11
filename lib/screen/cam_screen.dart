@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -138,19 +140,19 @@ class _CamScreenState extends State<CamScreen> {
         },
             // 내가 채널에서 나갔을 때
             onLeaveChannel: (RtcConnection connection, RtcStats stats) {
-          print(Strings.CHANNEL_INFO_EXIT_CHANNEL);
+          log(Strings.CHANNEL_INFO_EXIT_CHANNEL); // cf. debugprint가 있는데 이건 디버그 모드에서만 활용 가능!
           setState(() {
             uid = null;
           });
           onUserJoined:
           (RtcConnection connection, int remoteUid, int elapsed) {
-            print(
+            log(
                 "${Strings.CHANNEL_INFO_OTHER_USER_ENTER_CHANNEL} ${Strings.OTHRER_UID}:$remoteUid");
           };
           onUserOffline:
           (RtcConnection connection, int remoteUid,
               UserOfflineReasonType reason) {
-            print(
+            log(
                 "${Strings.CHANNEL_INFO_OTHER_USRE_EXIT_CHANNEL} ${Strings.OTHRER_UID}:$remoteUid");
           };
 
