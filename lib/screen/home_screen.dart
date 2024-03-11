@@ -15,9 +15,15 @@ class HomeScreen extends StatelessWidget {
         padding: EdgeInsets.all(8.0),
         child: Column(
           children: [
-            Expanded(child: _Logo()),
-            Expanded(child: _Image()),
-            Expanded(child: _Button()),
+            Expanded(
+              child: _Logo(),
+            ),
+            Expanded(
+              child: _Image(),
+            ),
+            Expanded(
+              child: _Button(),
+            ),
           ],
         ),
       ),
@@ -40,7 +46,7 @@ class _Logo extends StatelessWidget {
                 color: Colors.purple[300]!,
                 blurRadius: 12.0,
                 spreadRadius: 2.0,
-              )
+              ),
             ]),
         child: const Padding(
           padding: EdgeInsets.all(16.0),
@@ -55,12 +61,14 @@ class _Logo extends StatelessWidget {
               SizedBox(
                 width: 12.0,
               ),
-              Text(Strings.LIVE,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 30.0,
-                    letterSpacing: 4.0,
-                  )),
+              Text(
+                Strings.LIVE,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 30.0,
+                  letterSpacing: 4.0,
+                ),
+              ),
             ],
           ),
         ),
@@ -75,7 +83,9 @@ class _Image extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Image.asset("home_img".convertToFileFormat()),
+      child: Image.asset(
+        "home_img".convertToFileFormat(),
+      ),
     );
   }
 }
@@ -90,12 +100,17 @@ class _Button extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const CamScreen()),
-                );
-              },
-              child: const Text(Strings.ENTER))
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const CamScreen(),
+                ),
+              );
+            },
+            child: const Text(
+              Strings.ENTER,
+            ),
+          )
         ]);
   }
 }

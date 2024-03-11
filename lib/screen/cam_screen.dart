@@ -65,13 +65,16 @@ class _CamScreenState extends State<CamScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: ElevatedButton(
-                      onPressed: () async {
-                        if (engine != null) {
-                          await engine!.leaveChannel();
-                          engine = null;
-                        }
-                      },
-                      child: const Text(Strings.EXIT_CHANNEL)),
+                    onPressed: () async {
+                      if (engine != null) {
+                        await engine!.leaveChannel();
+                        engine = null;
+                      }
+                    },
+                    child: const Text(
+                      Strings.EXIT_CHANNEL,
+                    ),
+                  ),
                 )
               ],
             );
@@ -82,15 +85,18 @@ class _CamScreenState extends State<CamScreen> {
   renderMainView() {
     if (uid == null) {
       return const Center(
-        child: Text(Strings.CHANNEL_MSG_PLEASE_ENTER_CHANNEL),
+        child: Text(
+          Strings.CHANNEL_MSG_PLEASE_ENTER_CHANNEL,
+        ),
       );
     } else {
       return AgoraVideoView(
         controller: VideoViewController(
-            rtcEngine: engine!,
-            canvas: const VideoCanvas(
-              uid: 0,
-            )),
+          rtcEngine: engine!,
+          canvas: const VideoCanvas(
+            uid: 0,
+          ),
+        ),
       );
     }
   }
@@ -98,14 +104,18 @@ class _CamScreenState extends State<CamScreen> {
   renderSubView() {
     if (otherUid == null) {
       return const Center(
-        child: Text(Strings.CHANNEL_MSG_NO_USER_IN_CHANNEL),
+        child: Text(
+          Strings.CHANNEL_MSG_NO_USER_IN_CHANNEL,
+        ),
       );
     } else {
       return AgoraVideoView(
-          controller: VideoViewController.remote(
-              rtcEngine: engine!!,
-              canvas: VideoCanvas(uid: otherUid),
-              connection: const RtcConnection(channelId: CHANNEL_NAME)));
+        controller: VideoViewController.remote(
+          rtcEngine: engine!!,
+          canvas: VideoCanvas(uid: otherUid),
+          connection: const RtcConnection(channelId: CHANNEL_NAME),
+        ),
+      );
     }
   }
 
@@ -140,20 +150,25 @@ class _CamScreenState extends State<CamScreen> {
         },
             // 내가 채널에서 나갔을 때
             onLeaveChannel: (RtcConnection connection, RtcStats stats) {
-          log(Strings.CHANNEL_INFO_EXIT_CHANNEL); // cf. debugprint가 있는데 이건 디버그 모드에서만 활용 가능!
+          log(Strings
+              .CHANNEL_INFO_EXIT_CHANNEL); // cf. debugprint가 있는데 이건 디버그 모드에서만 활용 가능!
           setState(() {
             uid = null;
           });
+
           onUserJoined:
           (RtcConnection connection, int remoteUid, int elapsed) {
             log(
-                "${Strings.CHANNEL_INFO_OTHER_USER_ENTER_CHANNEL} ${Strings.OTHRER_UID}:$remoteUid");
+              "${Strings.CHANNEL_INFO_OTHER_USER_ENTER_CHANNEL} ${Strings.OTHRER_UID}:$remoteUid",
+            );
           };
+
           onUserOffline:
           (RtcConnection connection, int remoteUid,
               UserOfflineReasonType reason) {
             log(
-                "${Strings.CHANNEL_INFO_OTHER_USRE_EXIT_CHANNEL} ${Strings.OTHRER_UID}:$remoteUid");
+              "${Strings.CHANNEL_INFO_OTHER_USRE_EXIT_CHANNEL} ${Strings.OTHRER_UID}:$remoteUid",
+            );
           };
 
           setState(() {
