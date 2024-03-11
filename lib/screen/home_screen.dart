@@ -92,10 +92,10 @@ class _Button extends StatelessWidget {
           ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => CamScreen()),
+                  MaterialPageRoute(builder: (_) => const CamScreen()),
                 );
               },
-              child: Text(Strings.ENTER))
+              child: const Text(Strings.ENTER))
         ]);
   }
 }

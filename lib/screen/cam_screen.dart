@@ -6,7 +6,7 @@ import '../const/agora.dart';
 import '../const/strings.dart';
 
 class CamScreen extends StatefulWidget {
-  const CamScreen({Key? key}) : super(key: key);
+  const CamScreen({super.key});
 
   @override
   State<CamScreen> createState() => _CamScreenState();
@@ -25,7 +25,7 @@ class _CamScreenState extends State<CamScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(Strings.LIVE),
+        title: const Text(Strings.LIVE),
       ),
       body: FutureBuilder<bool>(
           future: init(),
@@ -39,7 +39,7 @@ class _CamScreenState extends State<CamScreen> {
             }
 
             if (!snapshot.hasData) {
-              return Center(
+              return const Center(
                 child: CircularProgressIndicator(),
               );
             }
@@ -69,7 +69,7 @@ class _CamScreenState extends State<CamScreen> {
                           engine = null;
                         }
                       },
-                      child: Text(Strings.EXIT_CHANNEL)),
+                      child: const Text(Strings.EXIT_CHANNEL)),
                 )
               ],
             );
@@ -79,14 +79,14 @@ class _CamScreenState extends State<CamScreen> {
 
   renderMainView() {
     if (uid == null) {
-      return Center(
+      return const Center(
         child: Text(Strings.CHANNEL_MSG_PLEASE_ENTER_CHANNEL),
       );
     } else {
       return AgoraVideoView(
         controller: VideoViewController(
             rtcEngine: engine!,
-            canvas: VideoCanvas(
+            canvas: const VideoCanvas(
               uid: 0,
             )),
       );
@@ -95,7 +95,7 @@ class _CamScreenState extends State<CamScreen> {
 
   renderSubView() {
     if (otherUid == null) {
-      return Center(
+      return const Center(
         child: Text(Strings.CHANNEL_MSG_NO_USER_IN_CHANNEL),
       );
     } else {
@@ -103,7 +103,7 @@ class _CamScreenState extends State<CamScreen> {
           controller: VideoViewController.remote(
               rtcEngine: engine!!,
               canvas: VideoCanvas(uid: otherUid),
-              connection: RtcConnection(channelId: CHANNEL_NAME)));
+              connection: const RtcConnection(channelId: CHANNEL_NAME)));
     }
   }
 
