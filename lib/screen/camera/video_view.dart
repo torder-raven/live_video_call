@@ -14,6 +14,8 @@ class VideoView extends StatefulWidget {
 
 class _VideoViewState extends State<VideoView> {
   final defaultUserid = 0;
+  VideoViewController? _mainVideoViewController;
+  VideoViewController? _subVideoViewController;
   RtcEngine? engine;
   int? uid = 0;
   int? otherUid;
@@ -38,9 +40,10 @@ class _VideoViewState extends State<VideoView> {
     );
   }
 
-  @override void dispose() {
-    super.dispose();
+  @override
+  void dispose() {
     clearAllInfo();
+    super.dispose();
   }
 
   Padding GoOutButton() {
@@ -55,29 +58,36 @@ class _VideoViewState extends State<VideoView> {
     );
   }
 
-  renderMainView() {
+  renderMainView() async {
     if (uid == null) {
       return Center(
         child: Text(Strings.PLEASE_JOIN),
       );
     } else {
-      return AgoraVideoView(
-        controller: VideoViewController(
-          rtcEngine: engine!,
-          canvas: VideoCanvas(
-            uid: defaultUserid,
-          ),
+      _mainVideoViewController = await VideoViewController(
+        rtcEngine: engine!,
+        canvas: VideoCanvas(
+          uid: defaultUserid,
         ),
+      );
+      return AgoraVideoView(
+        controller: _mainVideoViewController!,
       );
     }
   }
 
-  renderSubView() {
+  renderSubView() async {
     if (otherUid == null) {
       return Center(
         child: Text(Strings.NO_USER_IN_CHANNEL),
       );
     } else {
+      _subVideoViewController = await VideoViewController.remote(
+        rtcEngine: engine!,
+        canvas: VideoCanvas(uid: otherUid),
+        connection: RtcConnection(
+            channelId: dotenv.env[EnvKeys.CHANNEL_NAME].toString()),
+      );
       return Align(
         alignment: Alignment.topLeft,
         child: Container(
@@ -85,12 +95,7 @@ class _VideoViewState extends State<VideoView> {
           height: 160,
           width: 120,
           child: AgoraVideoView(
-            controller: VideoViewController.remote(
-              rtcEngine: engine!,
-              canvas: VideoCanvas(uid: otherUid),
-              connection: RtcConnection(
-                  channelId: dotenv.env[EnvKeys.CHANNEL_NAME].toString()),
-            ),
+            controller: _subVideoViewController!,
           ),
         ),
       );
@@ -167,5 +172,7 @@ class _VideoViewState extends State<VideoView> {
     engine = null;
     uid = null;
     otherUid = null;
+    _mainVideoViewController?.dispose();
+    _subVideoViewController?.dispose();
   }
 }
