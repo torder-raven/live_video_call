@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../const/agora.dart';
+import '../const/strings.dart';
 
 class CamScreen extends StatefulWidget {
   const CamScreen({Key? key}) : super(key: key);
@@ -24,7 +25,7 @@ class _CamScreenState extends State<CamScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('LIVE'),
+        title: Text(Strings.LIVE),
       ),
       body: FutureBuilder<bool>(
           future: init(),
@@ -68,7 +69,7 @@ class _CamScreenState extends State<CamScreen> {
                           engine = null;
                         }
                       },
-                      child: Text('채널나가기')),
+                      child: Text(Strings.EXIT_CHANNEL)),
                 )
               ],
             );
@@ -79,7 +80,7 @@ class _CamScreenState extends State<CamScreen> {
   renderMainView() {
     if (uid == null) {
       return Center(
-        child: Text('채널에 참여해주세요.'),
+        child: Text(Strings.CHANNEL_MSG_PLEASE_ENTER_CHANNEL),
       );
     } else {
       return AgoraVideoView(
@@ -95,7 +96,7 @@ class _CamScreenState extends State<CamScreen> {
   renderSubView() {
     if (otherUid == null) {
       return Center(
-        child: Text('채널에 유저가 없습니다.'),
+        child: Text(Strings.CHANNEL_MSG_NO_USER_IN_CHANNEL),
       );
     } else {
       return AgoraVideoView(
@@ -114,43 +115,43 @@ class _CamScreenState extends State<CamScreen> {
 
     if (cameraPermission != PermissionStatus.granted ||
         microphonePermission != PermissionStatus.granted) {
-      throw '카메라 또는 마이크 권한이 없습니다.';
+      throw Strings.PERMISSION_MSG_NO_CAMERA_OR_MIC_PERMISSION;
     }
 
     if (engine == null) {
       engine = createAgoraRtcEngine();
 
       await engine!.initialize(
-        RtcEngineContext(
+        const RtcEngineContext(
           appId: APP_ID,
         ),
       );
 
       engine!.registerEventHandler(
         RtcEngineEventHandler(
-            // 내가 채널에 입장했을때
-            // connection -> 연결정보
-            // elapsed -> 연결된 시간 (연결된지 얼마나 됐는지)
             onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          print('채널에 입장했습니다. uid: ${connection.localUid}');
+          print(
+              "${Strings.CHANNEL_INFO_ENTER_CHANNEL} ${Strings.UID}: ${connection.localUid}");
           setState(() {
             uid = connection.localUid;
           });
         },
             // 내가 채널에서 나갔을 때
             onLeaveChannel: (RtcConnection connection, RtcStats stats) {
-          print('채널 퇴장');
+          print(Strings.CHANNEL_INFO_EXIT_CHANNEL);
           setState(() {
             uid = null;
           });
           onUserJoined:
           (RtcConnection connection, int remoteUid, int elapsed) {
-            print('상대가 채널에 입장했습니다. otherUid:$remoteUid');
+            print(
+                "${Strings.CHANNEL_INFO_OTHER_USER_ENTER_CHANNEL} ${Strings.OTHRER_UID}:$remoteUid");
           };
           onUserOffline:
           (RtcConnection connection, int remoteUid,
               UserOfflineReasonType reason) {
-            print('상대가 채널에서 나갔습니다. otherUid:${remoteUid}');
+            print(
+                "${Strings.CHANNEL_INFO_OTHER_USRE_EXIT_CHANNEL} ${Strings.OTHRER_UID}:$remoteUid");
           };
 
           setState(() {
@@ -163,7 +164,7 @@ class _CamScreenState extends State<CamScreen> {
 
       await engine!.startPreview();
 
-      ChannelMediaOptions options = ChannelMediaOptions();
+      ChannelMediaOptions options = const ChannelMediaOptions();
 
       await engine!.joinChannel(
         token: TEMP_TOKEN,

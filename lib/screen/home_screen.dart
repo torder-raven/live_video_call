@@ -1,6 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:live_video_call/const/formatter.dart';
 import 'package:live_video_call/screen/cam_screen.dart';
+
+import '../const/strings.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -53,7 +55,7 @@ class _Logo extends StatelessWidget {
               SizedBox(
                 width: 12.0,
               ),
-              Text('LIVE',
+              Text(Strings.LIVE,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 30.0,
@@ -73,9 +75,7 @@ class _Image extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Image.asset(
-        'asset/img/home_img.png',
-      ),
+      child: Image.asset("home_img".convertToFileFormat()),
     );
   }
 }
@@ -88,10 +88,14 @@ class _Button extends StatelessWidget {
     return Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [ElevatedButton(onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => CamScreen()),
-          );
-        }, child: Text("입장하기"))]);
+        children: [
+          ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => CamScreen()),
+                );
+              },
+              child: Text(Strings.ENTER))
+        ]);
   }
 }
