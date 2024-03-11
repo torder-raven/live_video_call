@@ -177,7 +177,8 @@ class _CameraScreenState extends State<CameraScreen> {
       connection: const RtcConnection(channelId: Constants.CHANNEL_NAME),
     );
 
-    _mainVideoController = mainVideoController;
+    _otherVideoController?.dispose();
+    _otherVideoController = mainVideoController;
 
     return AgoraVideoView(controller: mainVideoController);
   }
@@ -188,6 +189,7 @@ class _CameraScreenState extends State<CameraScreen> {
       canvas: const VideoCanvas(uid: 0),
     );
 
+    _myVideoViewController?.dispose();
     _myVideoViewController = myVideoController;
 
     return AgoraVideoView(
