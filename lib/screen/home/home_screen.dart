@@ -54,7 +54,11 @@ class _Logo extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: [VideoIcon(), SizedBox(width: 12.0), LiveText()],
+            children: [
+              VideoIcon(),
+              SizedBox(width: 12.0),
+              LiveText(),
+            ],
           ),
         ),
       ),
@@ -96,7 +100,6 @@ class _Button extends StatelessWidget {
     );
   }
 }
-
 
 Icon VideoIcon() {
   return const Icon(
