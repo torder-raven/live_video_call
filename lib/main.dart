@@ -6,7 +6,7 @@ void main() {
   runApp(
     MaterialApp(
       home: const HomeScreen(),
-      theme: themeData(),
+      theme: homeTheme,
     ),
   );
 }
