@@ -65,7 +65,7 @@ class _CamScreenState extends State<CamScreen> {
                         await engine!.leaveChannel();
                         engine = null;
                       }
-                      Navigator.of(context).pop();
+                      Navigator.of(context).maybePop();
                     },
                     child: const Text(
                       Strings.EXIT_CHANNEL,
@@ -76,7 +76,6 @@ class _CamScreenState extends State<CamScreen> {
             );
           }),
     );
-
   }
 
   @override
@@ -85,10 +84,6 @@ class _CamScreenState extends State<CamScreen> {
     engine?.release();
     engine = null;
     super.dispose();
-  }
-
-  void disposeEngine() {
-
   }
 
   renderMainView() {
@@ -162,15 +157,19 @@ class _CamScreenState extends State<CamScreen> {
           });
 
           onUserJoined:
-          (RtcConnection connection, int remoteUid, int elapsed) {};
+          (RtcConnection connection, int remoteUid, int elapsed) {
+            setState(() {
+              otherUid = remoteUid;
+            });
+          };
 
           onUserOffline:
           (RtcConnection connection, int remoteUid,
-              UserOfflineReasonType reason) {};
-
-          setState(() {
-            otherUid = null;
-          });
+              UserOfflineReasonType reason) {
+            setState(() {
+              otherUid = null;
+            });
+          };
         }),
       );
 
