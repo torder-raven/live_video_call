@@ -12,34 +12,32 @@ class CamScreen extends StatefulWidget {
 }
 
 class _CamScreenState extends State<CamScreen> {
-  RtcEngine? rtcEngine;
-  RtcEngineEventHandler? rtcEngineEventHandler;
+  RtcEngine? _rtcEngine;
+  RtcEngineEventHandler? _rtcEngineEventHandler;
+  VideoViewController? _localVideoViewController;
+  final Map<int, VideoViewController> _remoteVideoViewControllers = {};
 
   // 내 ID
-  int? uid = 0;
-
-  // 상대방 ID
-  int? otherUid;
+  int? myUserId;
+  final Set<int> userIds = {};
 
   @override
   void initState() {
     super.initState();
-    initRtcEngine();
-    checkPermission();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           Strings.APP_TITLE,
         ),
       ),
       // setState 마다 future Block이 호출 됨!
       // FutureBuilder가 꼭 필요한가?
       body: FutureBuilder<bool>(
-        future: checkPermission(),
+        future: init(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
@@ -47,7 +45,7 @@ class _CamScreenState extends State<CamScreen> {
             );
           }
 
-          if (!snapshot.hasData) {
+          if (!snapshot.hasData || myUserId == null) {
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -67,9 +65,7 @@ class _CamScreenState extends State<CamScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: ElevatedButton(
-                  onPressed: () async {
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: onPressExit,
                   child: const Text(
                     Strings.LEAVE_CHANNEL,
                   ),
@@ -94,7 +90,7 @@ class _CamScreenState extends State<CamScreen> {
   }
 
   renderMainView() {
-    if (uid == null) {
+    if (myUserId == null) {
       return const Center(
         child: Text(
           Strings.PLEASE_JOIN_CHANNEL,
@@ -102,12 +98,7 @@ class _CamScreenState extends State<CamScreen> {
       );
     } else {
       return AgoraVideoView(
-        controller: VideoViewController(
-          rtcEngine: getRtcEngine(),
-          canvas: const VideoCanvas(
-            uid: 0,
-          ),
-        ),
+        controller: getVideoViewController(),
       );
     }
   }
@@ -115,50 +106,68 @@ class _CamScreenState extends State<CamScreen> {
   renderSubView() {
     return Align(
       alignment: Alignment.topLeft,
-      child: Container(
-        color: Colors.grey,
-        height: 160,
-        width: 160,
-        child: renderOtherUserView(),
-      ),
+      child: renderOtherUserView(),
     );
   }
 
   renderOtherUserView() {
-    if (otherUid == null) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Center(
-          child: Icon(
-            Icons.no_accounts_rounded,
-            color: Colors.white,
-          ),
-        ),
+    if (userIds.isNotEmpty) {
+      return Row(
+        children: userIds
+            .map(
+              (userId) => Padding(
+                padding: const EdgeInsets.only(left: 8.0, top: 8.0),
+                child: SizedBox(
+                  width: 100,
+                  height: 100,
+                  child: AgoraVideoView(
+                    controller: createRemoteVideoViewController(
+                      userId: userId,
+                    ),
+                  ),
+                ),
+              ),
+            )
+            .toList(),
       );
     } else {
-      return AgoraVideoView(
-        controller: VideoViewController.remote(
-          rtcEngine: getRtcEngine(),
-          // View를 여러 개 관리하게 된다면 여러 명이서 영상 통화를 할 수 있을까?
-          canvas: VideoCanvas(uid: otherUid),
-          connection: const RtcConnection(
-            channelId: CHANNEL_ID,
-          ),
-        ),
-      );
+      return Container();
     }
   }
 
+  VideoViewController createRemoteVideoViewController({
+    required int userId,
+  }) {
+    return _remoteVideoViewControllers[userId] ??= VideoViewController.remote(
+      rtcEngine: getRtcEngine(),
+      canvas: VideoCanvas(
+        uid: userId,
+      ),
+      connection: const RtcConnection(
+        channelId: CHANNEL_ID,
+      ),
+    );
+  }
+
   RtcEngine getRtcEngine() {
-    return rtcEngine ??= createAgoraRtcEngine();
+    return _rtcEngine ??= createAgoraRtcEngine();
   }
 
   RtcEngineEventHandler getRtcEngineEventHandler() {
-    return rtcEngineEventHandler ??= RtcEngineEventHandler(
+    return _rtcEngineEventHandler ??= RtcEngineEventHandler(
       onJoinChannelSuccess: onJoinChannelSuccess,
       onLeaveChannel: onLeaveChannel,
       onUserJoined: onUserJoined,
       onUserOffline: onUserOffline,
+    );
+  }
+
+  VideoViewController getVideoViewController() {
+    return _localVideoViewController ??= VideoViewController(
+      rtcEngine: getRtcEngine(),
+      canvas: VideoCanvas(
+        uid: myUserId ??= 0,
+      ),
     );
   }
 
@@ -169,8 +178,9 @@ class _CamScreenState extends State<CamScreen> {
     // 내가 채널에 입장했을 때
     // rtcConnection 연결 정보
     // elapsed 연결된 시간(연결된 지 얼마나 됐는지?)
+
     setState(() {
-      uid = rtcConnection.localUid;
+      myUserId = rtcConnection.localUid;
     });
   }
 
@@ -179,7 +189,7 @@ class _CamScreenState extends State<CamScreen> {
     RtcStats states,
   ) {
     setState(() {
-      uid = null;
+      myUserId = null;
     });
   }
 
@@ -189,7 +199,7 @@ class _CamScreenState extends State<CamScreen> {
     int elapsed,
   ) {
     setState(() {
-      otherUid = remoteUid;
+      userIds.add(remoteUid);
     });
   }
 
@@ -199,60 +209,96 @@ class _CamScreenState extends State<CamScreen> {
     UserOfflineReasonType reasonType,
   ) {
     setState(() {
-      otherUid = null;
+      userIds.remove(remoteUid);
     });
+
+    _remoteVideoViewControllers[remoteUid]?.dispose();
+    _remoteVideoViewControllers.remove(remoteUid);
+  }
+
+  checkPermission() async {
+    final response = await [Permission.camera, Permission.microphone].request();
+
+    if (response[Permission.camera] != PermissionStatus.granted) {
+      throw Strings.ERROR_NOT_GRANT_CAMERA_PERMISSION;
+    }
+
+    if (response[Permission.microphone] != PermissionStatus.granted) {
+      throw Strings.ERROR_NOT_GRANT_MICROPHONE_PERMISSION;
+    }
   }
 
   Future<bool> initRtcEngine() async {
-    await disposeRtcEngine();
-    await getRtcEngine().initialize(
-      const RtcEngineContext(
-        appId: APP_ID,
-      ),
-    );
+    if (_rtcEngine == null) {
+      await getRtcEngine().initialize(
+        const RtcEngineContext(
+          appId: APP_ID,
+        ),
+      );
 
-    getRtcEngine().registerEventHandler(getRtcEngineEventHandler());
+      getRtcEngine().registerEventHandler(getRtcEngineEventHandler());
 
-    await getRtcEngine().enableVideo();
-    await getRtcEngine().startPreview();
+      await getRtcEngine().enableVideo();
+      await getRtcEngine().startPreview();
+    }
+
+    return true;
+  }
+
+  joinChannel() async {
+    if (myUserId != null) return;
 
     ChannelMediaOptions options = const ChannelMediaOptions();
 
     await getRtcEngine().joinChannel(
       token: TEMP_TOKEN,
       channelId: CHANNEL_ID,
-      uid: 0,
+      uid: myUserId ??= 0,
       options: options,
     );
+  }
 
+  Future<bool> init() async {
+    await checkPermission();
+    await initRtcEngine();
+    await joinChannel();
     return true;
   }
 
-  Future<bool> checkPermission() async {
-    final response = await [Permission.camera, Permission.microphone].request();
-
-    final cameraPermission = response[Permission.camera];
-    final microphonePermission = response[Permission.microphone];
-
-    if (cameraPermission != PermissionStatus.granted) {
-      throw Strings.ERROR_NOT_GRANT_CAMERA_PERMISSION;
-    }
-
-    if (microphonePermission != PermissionStatus.granted) {
-      throw Strings.ERROR_NOT_GRANT_MICROPHONE_PERMISSION;
-    }
-    return true;
+  onPressExit() async {
+    await disposeRtcEngine();
+    Navigator.of(context).maybePop();
   }
 
-  disposeRtcEngine() async {
-    getRtcEngine().unregisterEventHandler(getRtcEngineEventHandler());
-    disposeRtcEngineEventHandler();
+  disposeVideoViewController() async {
+    if (_localVideoViewController != null) {
+      await _localVideoViewController?.dispose();
+      _localVideoViewController = null;
+    }
 
-    await getRtcEngine().leaveChannel();
-    rtcEngine = null;
+    if (_remoteVideoViewControllers.isNotEmpty) {
+      _remoteVideoViewControllers.forEach((userId, controller) async {
+        await controller.dispose();
+        _remoteVideoViewControllers.remove(userId);
+      });
+    }
   }
 
   disposeRtcEngineEventHandler() {
-    rtcEngineEventHandler = null;
+    if (_rtcEngineEventHandler != null) {
+      getRtcEngine().unregisterEventHandler(getRtcEngineEventHandler());
+      _rtcEngineEventHandler = null;
+    }
+  }
+
+  disposeRtcEngine() async {
+    await disposeVideoViewController();
+    await disposeRtcEngineEventHandler();
+
+    if (_rtcEngine != null) {
+      await getRtcEngine().leaveChannel();
+      await getRtcEngine().release();
+      _rtcEngine = null;
+    }
   }
 }
