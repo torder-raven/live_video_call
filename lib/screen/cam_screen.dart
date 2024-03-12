@@ -65,6 +65,7 @@ class _CamScreenState extends State<CamScreen> {
                         await engine!.leaveChannel();
                         engine = null;
                       }
+                      Navigator.of(context).pop();
                     },
                     child: const Text(
                       Strings.EXIT_CHANNEL,
@@ -84,6 +85,10 @@ class _CamScreenState extends State<CamScreen> {
     engine?.release();
     engine = null;
     super.dispose();
+  }
+
+  void disposeEngine() {
+
   }
 
   renderMainView() {
