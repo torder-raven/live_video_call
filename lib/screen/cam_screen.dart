@@ -108,7 +108,7 @@ class _CamScreenState extends State<CamScreen> {
     } else {
       return AgoraVideoView(
         controller: VideoViewController.remote(
-          rtcEngine: engine!!,
+          rtcEngine: engine!,
           canvas: VideoCanvas(uid: otherUid),
           connection: const RtcConnection(channelId: CHANNEL_NAME),
         ),
