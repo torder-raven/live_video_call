@@ -219,9 +219,8 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _dispose() async {
-    _otherVideoController?.dispose();
-    _myVideoViewController?.dispose();
     _engine?.unregisterEventHandler(_rtcEngineEventHandler);
+    await _otherVideoController?.dispose();
     await _myVideoViewController?.dispose();
     await _engine?.leaveChannel();
     await _engine?.release();
