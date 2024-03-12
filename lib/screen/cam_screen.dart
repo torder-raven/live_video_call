@@ -75,6 +75,14 @@ class _CamScreenState extends State<CamScreen> {
             );
           }),
     );
+
+  }
+
+  @override
+  void dispose() {
+    engine?.leaveChannel();
+    engine?.release();
+    super.dispose();
   }
 
   renderMainView() {
