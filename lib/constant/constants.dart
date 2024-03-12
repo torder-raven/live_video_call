@@ -1,9 +1,10 @@
 class Constants {
   Constants._();
 
-  static const APP_ID = "db746046e8db42878ae0cca13190104d";
-  static const CHANNEL_NAME = "benChannel";
-  static const TOKEN = "007eJxTYPhkIL2he3ll/5VL9m91Nj3eucTqubiKLtvHSt9HVauSSlcoMKQkmZuYGZiYpVqkJJkYWZhbJKYaJCcnGhobWhoYGpikbMt4l9oQyMhQy13DwsgAgSA+F0NSap5zRmJeXmoOAwMAhqoiwQ==";
+  static const ENV_FILE_NAME = ".env";
+  static const ENV_APP_ID = "APP_ID";
+  static const ENV_CHANNEL_NAME = "CHANNEL_NAME";
+  static const ENV_TOKEN = "TOKEN";
 
   static const IMAGE_PATH = "asset/img";
   static const LIVE_BUTTON_IMAGE_PATH = "asset/img/logo.png";

@@ -1,5 +1,6 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:live_video_call/constant/strings.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -19,6 +20,10 @@ class _CameraScreenState extends State<CameraScreen> {
   RtcEngine? _engine;
   VideoViewController? _myVideoViewController;
   VideoViewController? _otherVideoController;
+
+  String _appId = "";
+  String _token = "";
+  String _channelName = "";
 
   bool _localUserJoined = false;
   int? _otherUId;
@@ -87,12 +92,14 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Future<RtcEngine> initAgora() async {
     await requestPermission();
+    
+    loadAgoraConstants();
 
     if (_engine == null) {
       final engine = createAgoraRtcEngine();
 
-      await engine.initialize(const RtcEngineContext(
-        appId: Constants.APP_ID,
+      await engine.initialize(RtcEngineContext(
+        appId: _appId,
         channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
       ));
 
@@ -102,12 +109,13 @@ class _CameraScreenState extends State<CameraScreen> {
       await engine.enableVideo();
       await engine.startPreview();
       await engine.joinChannel(
-          token: Constants.TOKEN,
-          channelId: Constants.CHANNEL_NAME,
+          token: _token,
+          channelId: _channelName,
           uid: 0,
           options: const ChannelMediaOptions());
 
       _engine = engine;
+
     }
 
     return _engine!;
@@ -166,7 +174,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Widget otherVideoView(RtcEngine engine) {
     if (_otherUId == null) {
-      return Center(
+      return const Center(
         child: Text(Strings.WAITING_TEXT),
       );
     }
@@ -174,7 +182,7 @@ class _CameraScreenState extends State<CameraScreen> {
     final mainVideoController = VideoViewController.remote(
       rtcEngine: engine,
       canvas: VideoCanvas(uid: _otherUId),
-      connection: const RtcConnection(channelId: Constants.CHANNEL_NAME),
+      connection: RtcConnection(channelId: _channelName),
     );
 
     _otherVideoController?.dispose();
@@ -224,5 +232,11 @@ class _CameraScreenState extends State<CameraScreen> {
     await _myVideoViewController?.dispose();
     await _engine?.leaveChannel();
     await _engine?.release();
+  }
+
+  void loadAgoraConstants() {
+    _appId = dotenv.get(Constants.ENV_APP_ID);
+    _token = dotenv.get(Constants.ENV_TOKEN);
+    _channelName = dotenv.get(Constants.ENV_CHANNEL_NAME);
   }
 }
