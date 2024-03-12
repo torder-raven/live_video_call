@@ -43,3 +43,4 @@ app.*.map.json
 /android/app/release
 .metadata
 test/widget_test.dart
+.env
