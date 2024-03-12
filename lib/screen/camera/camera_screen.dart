@@ -23,7 +23,7 @@ class _CameraScreenState extends State<CameraScreen> {
   bool _localUserJoined = false;
   int? _otherUId;
 
-  bool isSwitch = false;
+  bool _isSwitch = false;
 
   @override
   void initState() {
@@ -150,7 +150,7 @@ class _CameraScreenState extends State<CameraScreen> {
       );
 
   List<Widget> videoViews(RtcEngine engine) => [
-        isSwitch ? myVideoView(engine) : otherVideoView(engine),
+        _isSwitch ? myVideoView(engine) : otherVideoView(engine),
         if (_localUserJoined)
           Positioned(
             left: 8.0,
@@ -159,7 +159,7 @@ class _CameraScreenState extends State<CameraScreen> {
               color: Colors.grey,
               height: 160,
               width: 120,
-              child: isSwitch ? otherVideoView(engine) : myVideoView(engine),
+              child: _isSwitch ? otherVideoView(engine) : myVideoView(engine),
             ),
           ),
       ];
@@ -210,7 +210,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   void onSwitchVideo() {
     setState(() {
-      isSwitch = !isSwitch;
+      _isSwitch = !_isSwitch;
     });
   }
 
