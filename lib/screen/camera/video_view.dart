@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:live_video_call/const/env_keys.dart';
 import '../../common.dart';
 import '../../const/strings.dart';
+import 'error_handler.dart';
 
 class VideoView extends StatefulWidget {
   const VideoView({super.key});
@@ -25,6 +26,7 @@ class _VideoViewState extends State<VideoView> {
     return FutureBuilder<bool>(
         future: init(),
         builder: (context, snapshot) {
+          catchError(snapshot);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
