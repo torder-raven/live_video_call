@@ -1,6 +1,8 @@
 class Strings {
   Strings._();
 
+  static const String APP_ID = "APP_ID";
+
   static const String LIVE = "LIVE";
   static const String ENTER = "입장하기";
   static const String EXIT_CHANNEL = "채널나가기";

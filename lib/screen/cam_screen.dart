@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../const/agora.dart';
@@ -16,11 +17,7 @@ class CamScreen extends StatefulWidget {
 
 class _CamScreenState extends State<CamScreen> {
   RtcEngine? engine;
-
-  // 나의 ID
   int? uid = 0;
-
-  // 상대 ID
   int? otherUid;
 
   @override
@@ -134,8 +131,8 @@ class _CamScreenState extends State<CamScreen> {
       engine = createAgoraRtcEngine();
 
       await engine!.initialize(
-        const RtcEngineContext(
-          appId: APP_ID,
+        RtcEngineContext(
+          appId: dotenv.env[Strings.APP_ID],
         ),
       );
 
