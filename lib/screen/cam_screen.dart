@@ -82,6 +82,7 @@ class _CamScreenState extends State<CamScreen> {
   void dispose() {
     engine?.leaveChannel();
     engine?.release();
+    engine = null;
     super.dispose();
   }
 
