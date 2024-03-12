@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -139,34 +137,22 @@ class _CamScreenState extends State<CamScreen> {
       engine!.registerEventHandler(
         RtcEngineEventHandler(
             onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          print(
-              "${Strings.CHANNEL_INFO_ENTER_CHANNEL} ${Strings.UID}: ${connection.localUid}");
           setState(() {
             uid = connection.localUid;
           });
         },
             // 내가 채널에서 나갔을 때
             onLeaveChannel: (RtcConnection connection, RtcStats stats) {
-          log(Strings
-              .CHANNEL_INFO_EXIT_CHANNEL); // cf. debugprint가 있는데 이건 디버그 모드에서만 활용 가능!
           setState(() {
             uid = null;
           });
 
           onUserJoined:
-          (RtcConnection connection, int remoteUid, int elapsed) {
-            log(
-              "${Strings.CHANNEL_INFO_OTHER_USER_ENTER_CHANNEL} ${Strings.OTHRER_UID}:$remoteUid",
-            );
-          };
+          (RtcConnection connection, int remoteUid, int elapsed) {};
 
           onUserOffline:
           (RtcConnection connection, int remoteUid,
-              UserOfflineReasonType reason) {
-            log(
-              "${Strings.CHANNEL_INFO_OTHER_USRE_EXIT_CHANNEL} ${Strings.OTHRER_UID}:$remoteUid",
-            );
-          };
+              UserOfflineReasonType reason) {};
 
           setState(() {
             otherUid = null;
