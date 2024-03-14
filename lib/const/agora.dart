@@ -1,0 +1,2 @@
+const CHANNEL_NAME = "testchannel";
+const TEMP_TOKEN = "007eJxTYFjZ5lQ6K6y2PuKW55RjRROD62Ve75RMzxcVXlX++HfY6WcKDMlGpoaJqebGlkappiYmFmYWZqaGqcnmqcbGpikWJoYW56a/S20IZGSwquJmZmSAQBCfm6EktbgkOSMxLy81h4EBAFN4InI=";
